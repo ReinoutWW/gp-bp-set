@@ -1,20 +1,64 @@
 // [DRAW] Drawing methods
 
+// This method is called often on runtime to update the UI
 public void drawControlBar() {
-  int x =  0; 
-  int y = this.cardPlayfieldGrid.length * CARDHEIGHT;
-  int controlBarWidth = this.cardPlayfieldGrid[0].length * CARDWIDTH;
-  
-  println("X: " + x + ". Y: " + y);
+  int controlbarStartX =  0; 
+  int controlbarStartY = this.cardPlayfieldGrid.length * CARDHEIGHT;
   
   fill(STYLES.get("ControlBarBackground"));
-  rect(x, y, controlBarWidth, this.CONTROLBARHEIGHT);
+  rect(controlbarStartX, controlbarStartY, this.CONTROLBARWIDTH, this.CONTROLBARHEIGHT);
+  
+  drawInfoText(controlbarStartX, controlbarStartY);
+  drawExpandButton(controlbarStartX, controlbarStartY);
+}
+
+public void drawExpandButton(int controlbarStartx, int controlbarStartY) {  
+  int buttonWidth = 125;
+  int buttonHeight = 50;
+  
+  int buttonStartX = controlbarStartx + CONTROLBARWIDTH - buttonWidth - COMPONENTPADDING[0];
+  int buttonStartY = controlbarStartY + COMPONENTPADDING[1];
+  color buttonTextColor = color(245, 245, 245);
+  
+  String buttonId = "Button__ExpandGrid";
+  int[] buttonClickData = new int[] { buttonStartX, (buttonStartX + buttonWidth), buttonStartY, (buttonStartY + buttonHeight)}; // fromX, toX, fromY, toY
+  this.BUTTONS.put(buttonId, buttonClickData);
+  
+  fill(this.hoveredButton == buttonId ? this.STYLES.get("ControlBarButton__Hover") : this.STYLES.get("ControlBarButton"));
+  drawSquare(buttonStartX, buttonStartY, buttonWidth, buttonHeight);
+  
+  fill(255, 255, 255);
+  drawText("Ik zie geen set", buttonStartX + COMPONENTPADDING[0], buttonStartY + buttonHeight / 2, buttonTextColor);
+}
+
+public void drawInfoText(int controlbarStartx, int controlbarStartY) {
+  int textStartX = controlbarStartx + COMPONENTPADDING[0]; // Padding x
+  int textStartY = controlbarStartY + COMPONENTPADDING[1]; // Padding y
+  int textSpacingCorrection = FONTSIZE;
+  int textSpacing = COMPONENTPADDING[0];
+  int cardsDealt = this.initialCardDeck.size() - this.activeCardDeck.size();
+  color textColor = this.STYLES.get("ControlBarText");
+  
+  // First value is for the found sets, second value is for the amount of sets still on the table + the given cards count from the deck.
+  String setsFound = "Sets gevonden: " + this.setsFound;
+  String setsOnTableAndGivenCards = "Sets op het veld: " + this.setsOnTable + ". (Aantal kaarten gedekt: " + cardsDealt + ")";
+  String gameActive = "Spel actief: " + this.gameActive;
+  
+  drawText(setsFound, textStartX, textStartY + textSpacingCorrection * 1, textColor); // Text spacing correct = 1x text
+  drawText(setsOnTableAndGivenCards, textStartX, textStartY + (textSpacingCorrection * 2) + textSpacing, textColor); // Text spacing correct = 2x text
+  drawText(gameActive, textStartX, textStartY + (textSpacingCorrection * 3) + (textSpacing * 2), textColor); // Text spacing correct = 3x text
+}
+
+public void drawText(String text, int x, int y, color textColor) {
+  fill(textColor);
+  textLeading(FONTSIZE);
+  textSize(FONTSIZE);
+  text(text, x, y);  
 }
 
 public void drawCardInGrid(int row, int column, String cardSymbol) {
   int x = column * CARDHEIGHT;
   int y = row * CARDWIDTH;
-  int z = 0;
   int cardWith = CARDWIDTH;
   int cardHeight = CARDHEIGHT;
   
@@ -24,15 +68,9 @@ public void drawCardInGrid(int row, int column, String cardSymbol) {
   // Hover styling
   if(cardSymbol == this.hoveredCard) {
     fill(STYLES.get("CardBackground__Hover"));
-    //cardWith += 5;
-    //cardHeight += 5;
-    //x -= 2.5;
-    //y -= 2.5;
-    //z += 1;
   }
   
-  rect(x, y, cardWith, cardHeight, z);
-
+  drawSquare(x, y, cardWith, cardHeight);
   drawSymbol(row, column, cardSymbol);
 }
 
@@ -42,8 +80,8 @@ public int getCardBackground(String cardSymbol) {
 
 public void drawSymbol(int row, int column, String cardSymbol) {
     // Validate if valid symbol
-    Matcher cardSymbolMatcher = this.cardSymbolPattern.matcher(cardSymbol);
-    if(!cardSymbolMatcher.matches()) {
+    //Matcher cardSymbolMatcher = this.cardSymbolPattern.matcher(cardSymbol);
+    if(strIsNullOrEmpty(cardSymbol)) {
       return;
     }
   
@@ -96,7 +134,7 @@ public void drawTriangle(int x, int y, int width, int height) {
 }
 
 public void drawSquare(int x, int y, int width, int height) {
-    rect(x, y, width, height);
+    rect(x, y, width, height, this.STYLES.get("BorderRadius__Element"));
 }
 
 public void drawEllipse(int x, int y, int width, int height) {

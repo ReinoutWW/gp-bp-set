@@ -40,13 +40,21 @@ final int CARDHEIGHT = 200;
 final int CARDWIDTH = 200;
 final int SYMBOLWIDTH = round(CARDWIDTH * 0.7f); // Symbol for the card
 final int SYMBOLHEIGHT = round(CARDHEIGHT * 0.10f); // Symbol for the card
+final int[] COMPONENTPADDING = new int[] { 10, 10 }; // x, y
+final int FONTSIZE = 16;
 final int CONTROLBARHEIGHT = 150;
+
+int CONTROLBARWIDTH = this.cardPlayfieldGrid[0].length * CARDWIDTH;
 
 // States for the game
 LinkedList<String> initialCardDeck = new LinkedList<String>();
 LinkedList<String> activeCardDeck = new LinkedList<String>();
 LinkedList<String> selectedCards = new LinkedList<String>();
 String hoveredCard = null;
+String hoveredButton = null;
+int setsOnTable = 0;
+int setsFound = 0;
+boolean gameActive = true;
 
 // Styling
 HashMap<String, Integer> STYLES = new HashMap<String, Integer>() {{
@@ -57,6 +65,14 @@ HashMap<String, Integer> STYLES = new HashMap<String, Integer>() {{
   put("Symbol__Blue", color(110, 144, 204));
   put("Symbol__Green", color(110, 204, 135)); 
   put("ControlBarBackground", color(245, 238, 225)); 
+  put("ControlBarText", color(20, 20, 20)); 
+  put("ControlBarButton", color(20, 20, 20)); 
+  put("ControlBarButton__Hover", color(50, 50, 50)); 
+  put("BorderRadius__Element", 10); 
+}};
+
+HashMap<String, int[]> BUTTONS = new HashMap<String, int[]>() {{
+  put("Button__ExpandGrid", new int[] {0, 0, 0, 0}); // ButtonId + [fromX, toX, fromY, toY]
 }};
 
 void setup() {
@@ -67,12 +83,12 @@ void setup() {
 
   // Setup the playing field
   this.initialCardDeck = generateCards(this.COLORS, this.SHAPES, this.MAXSHAPESPERCARD);
-  this.activeCardDeck = this.initialCardDeck;
+  this.activeCardDeck = new LinkedList<String>(this.initialCardDeck);
   
   // Get the first grid..
-  LinkedList<String> initialRandomCards = getRandomCardsFromActiveDeck(getGridSize(this.cardPlayfieldGrid));
-  this.cardPlayfieldGrid = addCardsToEmptyDeck(this.cardPlayfieldGrid, initialRandomCards);
-    
+  fillEmptySlotsWithCards();
+  this.setsOnTable = countValidSetsInGrid(this.cardPlayfieldGrid); 
+
   printSetStatistics();
 }
 
@@ -80,46 +96,18 @@ void draw() {
   sizeWindowToGridAndControlbar(this.cardPlayfieldGrid);
   drawCardsInGrid(this.cardPlayfieldGrid);
   drawControlBar();
-  this.hoveredCard = mouseOnCard();
   
-  if(userHasSetSelection()) {
-    if(isValidSetSelection()) {
-      println("Valid set.. ");
-      replaceSelectedCardsWithNewCards();
-      clearSelection();
-      printSetStatistics();
-      printGrid(this.cardPlayfieldGrid);
-    } else {
-      println("Not a valid set.. ");
-      clearSelection();
-    }
-  }
+  // Abstract: Events are used to track certain activity (e.g. addEventListener() method in JavaScript)
+  Event_TrackHoveredCard();
+  Event_TrackHoveredButton();
+  Event_UserHasValidSet();
+  Event_TrackGameEnd();
 }
 
 // [MOUSE] Mouse events
 void mousePressed() {
-  if(!strIsNullOrEmpty(this.hoveredCard) && this.selectedCards.size() < 3) {    
-    addOrRemoveCardToSelection(this.hoveredCard);
-  }
-}
-
-public String mouseOnCard() {
-  String hoveredCard = null;
-  for(int row = 0; row < this.cardPlayfieldGrid.length; row++) {
-    for(int column = 0; column < this.cardPlayfieldGrid[0].length; column++) {
-      // See if the mouse is hovered on top of a card in the grid..
-      int fromX = column * this.CARDWIDTH;
-      int toX = (column + 1) * this.CARDWIDTH;
-      int fromY = row * this.CARDHEIGHT;
-      int toY = (row + 1) * this.CARDHEIGHT;
-           
-      if(betweenNums(fromX, toX, mouseX) && betweenNums(fromY, toY, mouseY)) {
-        return this.cardPlayfieldGrid[row][column];
-      }
-    }
-  }
-  
-  return hoveredCard;
+  Event_TrackCardClicked();
+  Event_TrackButtonClicked();
 }
 
 void clearSelection() {
@@ -145,7 +133,6 @@ public void addOrRemoveCardToSelection(String card) {
     this.selectedCards.add(card);
   }
 }
-
 
 
 
@@ -193,15 +180,17 @@ int countValidSetsInGrid(String[][] playfield) {
 }
 
 // [DECK] Deck management methods
-public String[][] addCardsToEmptyDeck(String[][] cardsGrid, LinkedList<String> cards) {
-  if(getGridSize(cardsGrid) != cards.size()) {
+public String[][] addCardsToEmptyCardDeckSlots(String[][] cardsGrid, LinkedList<String> cards) {
+  if(cards.size() != countEmptyCardsInGrid(cardsGrid)) {
      return new String[][]{};
   };
   
   println("Adding cards to empty grid..");
   for(int rowI = 0; rowI < cardsGrid.length; rowI++) {
     for(int columnI = 0; columnI < cardsGrid[rowI].length; columnI++) {
-      cardsGrid[rowI][columnI] = cards.pop();
+      if(strIsNullOrEmpty(cardsGrid[rowI][columnI])) {
+        cardsGrid[rowI][columnI] = cards.pop();
+      }
     }
   }
   
@@ -227,11 +216,6 @@ public LinkedList<String> generateCards(String[] colors, String[] shapes, int ma
   
   return cards;
 };
-
-public String getRandomCard(LinkedList<String> cards) {
-  int randomIndex = (int) ((Math.random() * cards.size()));
-  return cards.get(randomIndex);
-}
 
 void replaceSelectedCardsWithNewCards() {
   for(int row = 0; row < this.cardPlayfieldGrid.length; row++) {

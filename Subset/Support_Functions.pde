@@ -1,4 +1,11 @@
 // [DEBUG] Debug methods or help methods
+// simular to extension methods
+
+public String getRandomItem(LinkedList<String> items) {
+  int randomIndex = (int) ((Math.random() * items.size()));
+  return items.get(randomIndex);
+}
+
 public void printSetStatistics() {
   println("");
   int validSetsInPlayfield = countValidSetsInGrid(this.cardPlayfieldGrid);
