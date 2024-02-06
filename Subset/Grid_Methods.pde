@@ -83,4 +83,5 @@ public void expandGrid() {
   this.cardPlayfieldGrid = newField;
   fillEmptySlotsWithCards();
   this.CONTROLBARWIDTH = this.cardPlayfieldGrid[0].length * CARDWIDTH;
+  this.fieldExandUsed = true;
 }

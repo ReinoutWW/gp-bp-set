@@ -1,12 +1,8 @@
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Map;
-
-final Pattern cardSymbolPattern = Pattern.compile("\\d[A-Za-z]{2}", Pattern.CASE_INSENSITIVE);
 
 // -- Space and time complexity --
 // For some methods, the space and time complexity has been given in big O. e.g. o(n).
@@ -35,14 +31,15 @@ final String[] COLORS = { "red", "green", "blue" };
 final String[] SHAPES = { "eclipse", "square", "triangle" };
 final int MAXSHAPESPERCARD = 3;
 
-// Card dimensions
+final int[] COMPONENTPADDING = new int[] { 10, 10 }; // x, y
 final int CARDHEIGHT = 200;
 final int CARDWIDTH = 200;
-final int SYMBOLWIDTH = round(CARDWIDTH * 0.7f); // Symbol for the card
-final int SYMBOLHEIGHT = round(CARDHEIGHT * 0.10f); // Symbol for the card
-final int[] COMPONENTPADDING = new int[] { 10, 10 }; // x, y
+final int SYMBOLWIDTH = round(CARDWIDTH * 0.6f); // Symbol for the card
+final int SYMBOLHEIGHT = round(CARDHEIGHT * 0.15f); // Symbol for the card
 final int FONTSIZE = 16;
 final int CONTROLBARHEIGHT = 150;
+final int SETFOUNDSCORE = 100;
+final int MAXCARDSELECTION = 3;
 
 int CONTROLBARWIDTH = this.cardPlayfieldGrid[0].length * CARDWIDTH;
 
@@ -54,33 +51,83 @@ String hoveredCard = null;
 String hoveredButton = null;
 int setsOnTable = 0;
 int setsFound = 0;
-boolean gameActive = true;
+int userScore = 0;
+float userScoreMultiplier = 1f;
+boolean gameActive = false;
+boolean fieldExandUsed = false;
+
 
 // Styling
 HashMap<String, Integer> STYLES = new HashMap<String, Integer>() {{
-  put("CardBackground", color(245, 245, 245));
-  put("CardBackground__Active", color(249, 239, 219));
-  put("CardBackground__Hover", color(245, 238, 225));
+  put("TextColor", color(20, 20, 20)); 
+  put("Card__Background", color(245, 245, 245));
+  put("Card__Active", color(249, 239, 219));
+  put("Card__Hover", color(245, 242, 235));
   put("Symbol__Red", color(204, 110, 110));
   put("Symbol__Blue", color(110, 144, 204));
   put("Symbol__Green", color(110, 204, 135)); 
-  put("ControlBarBackground", color(245, 238, 225)); 
-  put("ControlBarText", color(20, 20, 20)); 
-  put("ControlBarButton", color(20, 20, 20)); 
-  put("ControlBarButton__Hover", color(50, 50, 50)); 
+  put("ControlBar__Background", color(245, 238, 225)); 
+  put("ControlBar__Text", color(20, 20, 20)); 
+  put("ControlBarButton__Text", color(20, 20, 20)); 
+  put("ControlBarButton__FontSize", 18); 
+  put("ControlBarButton", color(235, 208, 176)); 
+  put("ControlBarButton__Hover", color(225, 219, 211)); 
   put("BorderRadius__Element", 10); 
+  put("EndScreen__Background", color(245, 238, 225)); 
+  put("EndScreenButton__Background",color(235, 208, 176)); 
+  put("EndScreenButton__Hover", color(225, 219, 211)); 
 }};
 
-HashMap<String, int[]> BUTTONS = new HashMap<String, int[]>() {{
+// For event binding
+HashMap<String, int[]> BUTTONS = new HashMap<String, int[]>() {{ // Id, Cords, Event click
   put("Button__ExpandGrid", new int[] {0, 0, 0, 0}); // ButtonId + [fromX, toX, fromY, toY]
 }};
 
 void setup() {
   size(600, 600);
-  
-  println("Starting game..");
-  printWindowGridSize(this.cardPlayfieldGrid);
+  //startSet();
+  this.gameActive = false;
+}
 
+void draw() {
+  // Abstract: Events are used to track certain activity (e.g. addEventListener() method in JavaScript)
+  Event_TrackHoveredButton();
+  
+  if(this.gameActive) {
+    sizeWindowToGridAndControlbar(this.cardPlayfieldGrid);
+    drawCardsInGrid(this.cardPlayfieldGrid);
+    drawControlBar();
+  
+    Event_TrackHoveredCard();
+    Event_UserHasValidSet();
+    Event_TrackGameEnd();
+  } else {
+    drawHomeScreen();
+  }  
+}
+
+// [MOUSE] Mouse events
+void mousePressed() {
+  Event_TrackButtonClicked();
+
+  if(this.gameActive) {
+    Event_TrackCardClicked();
+  }  
+}
+
+public void startSet() {
+  println("Starting game..");
+  
+  this.cardPlayfieldGrid = new String[3][3];
+  printWindowGridSize(this.cardPlayfieldGrid);
+  this.userScore = 0;
+  this.userScoreMultiplier = 1f;
+  this.fieldExandUsed = false;
+  this.gameActive = true;
+  hoveredCard = null;
+  hoveredButton = null;
+  setsOnTable = 0;
+  
   // Setup the playing field
   this.initialCardDeck = generateCards(this.COLORS, this.SHAPES, this.MAXSHAPESPERCARD);
   this.activeCardDeck = new LinkedList<String>(this.initialCardDeck);
@@ -91,49 +138,6 @@ void setup() {
 
   printSetStatistics();
 }
-
-void draw() {
-  sizeWindowToGridAndControlbar(this.cardPlayfieldGrid);
-  drawCardsInGrid(this.cardPlayfieldGrid);
-  drawControlBar();
-  
-  // Abstract: Events are used to track certain activity (e.g. addEventListener() method in JavaScript)
-  Event_TrackHoveredCard();
-  Event_TrackHoveredButton();
-  Event_UserHasValidSet();
-  Event_TrackGameEnd();
-}
-
-// [MOUSE] Mouse events
-void mousePressed() {
-  Event_TrackCardClicked();
-  Event_TrackButtonClicked();
-}
-
-void clearSelection() {
-  this.selectedCards = new LinkedList<String>();
-}
-
-public boolean userHasSetSelection() {
-  return (this.selectedCards.size() == 3);
-}
-
-public boolean cardIsInSelection(String card) {
-  return this.selectedCards.contains(card);
-}
-
-public boolean isValidSetSelection() {
-    return isValidSet(this.selectedCards.get(0), this.selectedCards.get(1), this.selectedCards.get(2));
-}
-
-public void addOrRemoveCardToSelection(String card) {
-  if(this.selectedCards.contains(card)) {
-    this.selectedCards.remove(card);
-  } else {
-    this.selectedCards.add(card);
-  }
-}
-
 
 
 // [VALIDATE] Validating sets

@@ -1,6 +1,38 @@
 // [DEBUG] Debug methods or help methods
 // simular to extension methods
 
+public void reduceScoreMultiplier() {
+  this.userScoreMultiplier = 0.5f;
+}
+
+public void addScore() {
+  this.userScore = this.userScore + round(SETFOUNDSCORE * this.userScoreMultiplier);
+}
+
+void clearSelection() {
+  this.selectedCards = new LinkedList<String>();
+}
+
+public boolean userHasSetSelection() {
+  return (this.selectedCards.size() == MAXCARDSELECTION);
+}
+
+public boolean cardIsInSelection(String card) {
+  return this.selectedCards.contains(card);
+}
+
+public boolean isValidSetSelection() {
+    return isValidSet(this.selectedCards.get(0), this.selectedCards.get(1), this.selectedCards.get(2));
+}
+
+public void addOrRemoveCardToSelection(String card) {
+  if(this.selectedCards.contains(card)) {
+    this.selectedCards.remove(card);
+  } else {
+    this.selectedCards.add(card);
+  }
+}
+
 public String getRandomItem(LinkedList<String> items) {
   int randomIndex = (int) ((Math.random() * items.size()));
   return items.get(randomIndex);

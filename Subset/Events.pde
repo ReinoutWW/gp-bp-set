@@ -1,4 +1,8 @@
-// [EVENTS] Track events
+// [EVENTS] Track events. Prefix : "Event_{Method name}"
+
+public void AddEventBind(String buttonId, int[] cords) {
+  this.BUTTONS.put(buttonId, cords);
+}
 
 public void Event_UserHasValidSet() {
   if(userHasSetSelection()) {
@@ -8,7 +12,7 @@ public void Event_UserHasValidSet() {
       replaceSelectedCardsWithNewCards();
       clearSelection();
       printSetStatistics();
-      printGrid(this.cardPlayfieldGrid);
+      addScore();
       this.setsOnTable = countValidSetsInGrid(this.cardPlayfieldGrid); 
     } else {
       println("Not a valid set.. ");
@@ -56,7 +60,7 @@ public void Event_TrackHoveredButton() {
     String key = buttonEntry.getKey();
     int[] value = buttonEntry.getValue();
     
-    if (betweenNums(value[0], value[2], mouseX) && betweenNums(value[1], value[3], mouseY)) {
+    if (betweenNums(value[0], value[1], mouseX) && betweenNums(value[2], value[3], mouseY)) {
       hoveredButton = key;
       break; // Stop de lus als we een gehoverde knop hebben gevonden
     }
@@ -68,5 +72,8 @@ public void Event_TrackHoveredButton() {
 public void Event_TrackButtonClicked() {
   if(this.hoveredButton == "Button__ExpandGrid") {
     expandGrid();
+  }
+  if(this.hoveredButton == "Button__StartSet") {
+    startSet();
   }
 }
