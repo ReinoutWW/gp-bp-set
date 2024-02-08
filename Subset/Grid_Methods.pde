@@ -70,7 +70,12 @@ public int countEmptyCardsInGrid(String[][] grid) {
 }
 
 public void expandGrid() {
-  String[][] newField = new String[3][4];
+  int currentWidth = this.cardPlayfieldGrid[0].length;
+  int currentHeight = this.cardPlayfieldGrid.length;
+  
+  int newWidth = currentWidth; // new column
+  int newHeight = currentHeight + 1; // Same as before
+  String[][] newField = new String[newHeight][newWidth];
   
   for(int row = 0; row < this.cardPlayfieldGrid.length; row++) {
     for(int column = 0; column < this.cardPlayfieldGrid[0].length; column++) {
@@ -80,8 +85,11 @@ public void expandGrid() {
     }
   }
   
+  println("Print grid");
+  printGrid(newField);
+  
   this.cardPlayfieldGrid = newField;
   fillEmptySlotsWithCards();
-  this.CONTROLBARWIDTH = this.cardPlayfieldGrid[0].length * CARDWIDTH;
+  width = this.cardPlayfieldGrid[0].length * CARDWIDTH;
   this.fieldExandUsed = true;
 }

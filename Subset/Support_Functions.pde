@@ -1,6 +1,14 @@
 // [DEBUG] Debug methods or help methods
 // simular to extension methods
 
+public int[] calculateSymbolPosition(int row, int column, int index, int totalSymbols, int symbolWidth, int symbolHeight) {
+    // Ensure even spacing by calculating the vertical spacing correctly
+    int spacing = (CARDHEIGHT - (symbolHeight * totalSymbols)) / (totalSymbols + 1);  
+    int x = column * CARDWIDTH + ((CARDWIDTH - symbolWidth) / 2); // Center horizontally within the card
+    int y = row * CARDHEIGHT + spacing + (index * (symbolHeight + spacing)); // Adjust vertical spacing
+    return new int[]{x, y};
+}
+
 public void reduceScoreMultiplier() {
   this.userScoreMultiplier = 0.5f;
 }

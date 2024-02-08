@@ -1,4 +1,7 @@
 // [DRAW] Drawing methods
+// Shapes will draw without a standard color.
+// Text will default to the selected color in the STYLES HashMap.
+
 
 // This method is called often on runtime to update the UI
 public void drawControlBar() {
@@ -6,33 +9,60 @@ public void drawControlBar() {
   int controlbarStartY = this.cardPlayfieldGrid.length * CARDHEIGHT;
   
   fill(STYLES.get("ControlBar__Background"));
-  rect(controlbarStartX, controlbarStartY, this.CONTROLBARWIDTH, this.CONTROLBARHEIGHT);
+  rect(controlbarStartX, controlbarStartY, width, this.CONTROLBARHEIGHT);
   
   drawInfoText(controlbarStartX, controlbarStartY);
   
   if(!this.fieldExandUsed && this.activeCardDeck.size() >= 3) {
-    drawExpandButton(controlbarStartX, controlbarStartY);
+    int buttonWidth = 125;
+    int buttonHeight = 30;
+    int buttonX = width - buttonWidth - COMPONENTPADDING[0];
+    int buttonY = height - buttonHeight - COMPONENTPADDING[1];
+  
+    addAndDrawButton(buttonX, buttonY, buttonWidth, buttonHeight, "Button__ExpandGrid", "Ik zie geen set");
   }
 }
 
-public void drawExpandButton(int controlbarStartx, int controlbarStartY) {  
-  int buttonWidth = 125;
-  int buttonHeight = 30;
-  int buttonStartX = controlbarStartx + CONTROLBARWIDTH - buttonWidth - COMPONENTPADDING[0];
-  int buttonStartY = controlbarStartY + COMPONENTPADDING[1];
-  int buttonTextX = buttonStartX + COMPONENTPADDING[0];
-  int buttonTextY =  buttonStartY + buttonHeight - COMPONENTPADDING[1];
+public void drawEndScore() {
+  int scoreContainerWidth = width / 2;
+  int scoreContainerHeight = 250;
+  int scoreContainerX = (width / 2) - (scoreContainerWidth / 2);
+  int scoreContainerY = height / 2;
   
-  String buttonId = "Button__ExpandGrid";
-  int buttonToX = buttonStartX + buttonWidth; // Calculate the end of the buttons X cord
-  int buttonToY = buttonStartY + buttonHeight; // Calculate the end of the buttons Y cord
-  int[] buttonClickData = new int[] { buttonStartX, buttonToX, buttonStartY, buttonToY}; // fromX, toX, fromY, toY
-  AddEventBind(buttonId, buttonClickData);
+  fill(this.STYLES.get("Score__Background"));
+  drawSquare(scoreContainerX, scoreContainerY, scoreContainerWidth, scoreContainerHeight);
+
+  int textPaddingY = COMPONENTPADDING[1];
+  int textSpaceCorrection = FONTSIZE + textPaddingY;
+  int textX = scoreContainerX + COMPONENTPADDING[0]; 
+  int textY = scoreContainerY + textPaddingY + textSpaceCorrection;
   
-  fill(this.hoveredButton == buttonId ? this.STYLES.get("ControlBarButton__Hover") : this.STYLES.get("ControlBarButton"));
-  drawSquare(buttonStartX, buttonStartY, buttonWidth, buttonHeight);
+  String heading = "Game over!";
+  String setsFound = "Sets gevonden: " + this.setsFound;
+  String userScore = "Eindscore: " + this.userScore;
   
-  drawText("Ik zie geen set", buttonTextX, buttonTextY, this.STYLES.get("ControlBarButton__Text"), this.STYLES.get("ControlBarButton__FontSize"));
+  textAlign(LEFT);
+  color textColor = this.STYLES.get("EndScreen__Text");
+  
+  drawText(heading, textX, textY, textColor);
+  drawText(setsFound, textX, textY + (textSpaceCorrection * 1), textColor);
+  drawText(userScore, textX, textY + (textSpaceCorrection * 2), textColor);
+}
+
+public void drawButton(String text, int x, int y, int buttonWidth, int buttonHeight, String buttonId) {
+  int buttonTextX = x + (buttonWidth / 2);
+  int buttonTextY =  y + (buttonHeight / 2);
+    
+  color buttonColor = this.STYLES.get("btn__Background");
+  color buttonColorHover = this.STYLES.get("btn__Hover");
+  color buttonTextColor = this.STYLES.get("btn__Text");
+  color buttonFontSize = this.STYLES.get("btn__FontSize");
+  
+  fill(this.hoveredButton == buttonId ? buttonColorHover : buttonColor);
+  drawSquare(x, y, buttonWidth, buttonHeight);
+  
+  fill(buttonTextColor);
+  drawHeading(text, buttonTextX, buttonTextY, buttonTextColor, buttonFontSize);
 }
 
 public void drawInfoText(int controlbarStartx, int controlbarStartY) {
@@ -41,11 +71,11 @@ public void drawInfoText(int controlbarStartx, int controlbarStartY) {
   int textSpacingCorrection = FONTSIZE;
   int textSpacing = COMPONENTPADDING[0];
   int cardsDealt = this.initialCardDeck.size() - this.activeCardDeck.size();
-  color textColor = this.STYLES.get("ControlBar__Text");
+  color textColor = STYLES.get("TextColor");
   
   // First value is for the found sets, second value is for the amount of sets still on the table + the given cards count from the deck.
   String setsFound = "Sets gevonden: " + this.setsFound;
-  String setsOnTableAndGivenCards = "Sets op het veld: " + this.setsOnTable + ". (Aantal kaarten gedekt: " + cardsDealt + ")";
+  String setsOnTableAndGivenCards = "Sets op het veld: " + this.setsOnTable + ". ( Aantal kaarten gedekt: " + cardsDealt + " )";
   String userScore = "Score: " + this.userScore;
   
   drawText(setsFound, textStartX, textStartY + textSpacingCorrection * 1, textColor); // Text spacing correct = 1x text
@@ -105,14 +135,6 @@ public void setDrawColor(char symbolColor) {
     }
 }
 
-public int[] calculateSymbolPosition(int row, int column, int index, int totalSymbols, int symbolWidth, int symbolHeight) {
-    // Ensure even spacing by calculating the vertical spacing correctly
-    int spacing = (CARDHEIGHT - (symbolHeight * totalSymbols)) / (totalSymbols + 1);  
-    int x = column * CARDWIDTH + ((CARDWIDTH - symbolWidth) / 2); // Center horizontally within the card
-    int y = row * CARDHEIGHT + spacing + (index * (symbolHeight + spacing)); // Adjust vertical spacing
-    return new int[]{x, y};
-}
-
 public void drawShape(int x, int y, int width, int height, char shape) {
     switch (shape) {
         case 't': drawTriangle(x, y, width, height); break;
@@ -138,11 +160,15 @@ public void drawEllipse(int x, int y, int width, int height) {
     ellipse(x + width / 2, y + height / 2, width, height);
 }
 
-public void drawHeading(String text, int x, int y, int fontSize) {
+public void drawHeading(String text, int x, int y, color textColor, int... fontSize) {
+  int defFontSize = (fontSize.length > 0) ? fontSize[0] : FONTSIZE;
+  color defTextColor = (textColor == 0) ? textColor : STYLES.get("TextColor");
+  
+  textFont(this.FONTFAMILY);
   shapeMode(CENTER);
-  textAlign(CENTER);
-  fill(this.STYLES.get("TextColor"));
-  textSize(fontSize);
+  textAlign(CENTER, CENTER);
+  fill(defTextColor);
+  textSize(defFontSize);
   text(text, x, y);
 }
 
@@ -150,6 +176,8 @@ public void drawText(String text, int x, int y, color textColor, int... fontSize
   int defFontSize = (fontSize.length > 0) ? fontSize[0] : FONTSIZE;
   color defTextColor = (textColor == 0) ? textColor : STYLES.get("TextColor");
   
+  textFont(this.FONTFAMILY);
+  textAlign(LEFT);
   fill(defTextColor);
   textLeading(defFontSize);
   textSize(defFontSize);

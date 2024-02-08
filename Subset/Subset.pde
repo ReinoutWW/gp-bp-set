@@ -24,7 +24,8 @@ import java.util.Map;
 // - Symbol sizing (width and height)
 
 // Playing field (Dynamic playing field)
-String[][] cardPlayfieldGrid = new String[3][3];
+final int INITIALGRIDHEIGHT = 3;
+final int INITIALGRIDWIDTH = 3;
 
 // Settings (Support different sets dynamically)
 final String[] COLORS = { "red", "green", "blue" };
@@ -40,10 +41,10 @@ final int FONTSIZE = 16;
 final int CONTROLBARHEIGHT = 150;
 final int SETFOUNDSCORE = 100;
 final int MAXCARDSELECTION = 3;
-
-int CONTROLBARWIDTH = this.cardPlayfieldGrid[0].length * CARDWIDTH;
+PFont FONTFAMILY;
 
 // States for the game
+String[][] cardPlayfieldGrid = new String[3][3];
 LinkedList<String> initialCardDeck = new LinkedList<String>();
 LinkedList<String> activeCardDeck = new LinkedList<String>();
 LinkedList<String> selectedCards = new LinkedList<String>();
@@ -54,6 +55,7 @@ int setsFound = 0;
 int userScore = 0;
 float userScoreMultiplier = 1f;
 boolean gameActive = false;
+boolean showScoreHomescreen = false;
 boolean fieldExandUsed = false;
 
 
@@ -68,14 +70,14 @@ HashMap<String, Integer> STYLES = new HashMap<String, Integer>() {{
   put("Symbol__Green", color(110, 204, 135)); 
   put("ControlBar__Background", color(245, 238, 225)); 
   put("ControlBar__Text", color(20, 20, 20)); 
-  put("ControlBarButton__Text", color(20, 20, 20)); 
-  put("ControlBarButton__FontSize", 18); 
-  put("ControlBarButton", color(235, 208, 176)); 
-  put("ControlBarButton__Hover", color(225, 219, 211)); 
+  put("btn__Text", color(20, 20, 20)); 
+  put("btn__FontSize", 12); 
+  put("btn__Background", color(235, 208, 176)); 
+  put("btn__Hover", color(225, 219, 211)); 
   put("BorderRadius__Element", 10); 
   put("EndScreen__Background", color(245, 238, 225)); 
-  put("EndScreenButton__Background",color(235, 208, 176)); 
-  put("EndScreenButton__Hover", color(225, 219, 211)); 
+  put("EndScreen__Text", color(20, 20, 20)); 
+  put("Score__Background", color(245, 245, 245)); 
 }};
 
 // For event binding
@@ -84,9 +86,8 @@ HashMap<String, int[]> BUTTONS = new HashMap<String, int[]>() {{ // Id, Cords, E
 }};
 
 void setup() {
+  this.FONTFAMILY = createFont("Minecraft.ttf", 128);
   size(600, 600);
-  //startSet();
-  this.gameActive = false;
 }
 
 void draw() {
@@ -103,40 +104,47 @@ void draw() {
     Event_TrackGameEnd();
   } else {
     drawHomeScreen();
+    
+    if(this.showScoreHomescreen) {
+      drawEndScore();
+    }
   }  
 }
 
 // [MOUSE] Mouse events
 void mousePressed() {
-  Event_TrackButtonClicked();
-
-  if(this.gameActive) {
-    Event_TrackCardClicked();
-  }  
+  if(!this.gameActive) {
+      Event_TrackStartButtonClicked();
+  } else {
+      Event_TrackCardClicked();
+      Event_TrackExpandGridButtonClicked();
+  }
 }
 
 public void startSet() {
   println("Starting game..");
   
-  this.cardPlayfieldGrid = new String[3][3];
-  printWindowGridSize(this.cardPlayfieldGrid);
+  this.cardPlayfieldGrid = new String[this.INITIALGRIDHEIGHT][this.INITIALGRIDWIDTH];
+  this.printWindowGridSize(this.cardPlayfieldGrid);
   this.userScore = 0;
   this.userScoreMultiplier = 1f;
+  this.setsFound = 0;
   this.fieldExandUsed = false;
   this.gameActive = true;
-  hoveredCard = null;
-  hoveredButton = null;
-  setsOnTable = 0;
+  this.showScoreHomescreen = false;
+  this.hoveredCard = null;
+  this.hoveredButton = null;
+  this.setsOnTable = 0;
   
   // Setup the playing field
   this.initialCardDeck = generateCards(this.COLORS, this.SHAPES, this.MAXSHAPESPERCARD);
   this.activeCardDeck = new LinkedList<String>(this.initialCardDeck);
   
   // Get the first grid..
-  fillEmptySlotsWithCards();
+  this.fillEmptySlotsWithCards();
   this.setsOnTable = countValidSetsInGrid(this.cardPlayfieldGrid); 
 
-  printSetStatistics();
+  this.printSetStatistics();
 }
 
 

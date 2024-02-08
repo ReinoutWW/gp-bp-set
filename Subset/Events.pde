@@ -1,7 +1,21 @@
 // [EVENTS] Track events. Prefix : "Event_{Method name}"
 
-public void AddEventBind(String buttonId, int[] cords) {
-  this.BUTTONS.put(buttonId, cords);
+public void addAndDrawButton(int x, int y, int buttonWidth, int buttonHeight, String buttonId, String buttonText) {  
+  int[] buttonData = new int[] { x, y, buttonWidth, buttonHeight}; // fromX, toX, width, height
+  AddEventBind(buttonId, buttonData); // This will calculate the buttons dimensions for click event validation
+  
+  drawButton(buttonText, x, y, buttonWidth, buttonHeight, buttonId);
+}
+
+// Cords = x, y, width, height (0, 1, 2, 3)
+public void AddEventBind(String buttonId, int[] buttonData) {
+  int fromX = buttonData[0];
+  int toX = buttonData[0] + buttonData[2];
+  int fromY = buttonData[1];
+  int toY = buttonData[1] + buttonData[3]; 
+  
+  int[] trackingCords = new int[] { fromX, toX, fromY, toY };
+  this.BUTTONS.put(buttonId, trackingCords);
 }
 
 public void Event_UserHasValidSet() {
@@ -44,6 +58,7 @@ public void Event_TrackGameEnd() {
   // If there's no cards left..
   if(this.setsOnTable == 0) {
     gameActive = false;
+    showScoreHomescreen = true;
   }
 }
 
@@ -69,11 +84,14 @@ public void Event_TrackHoveredButton() {
   this.hoveredButton = hoveredButton;
 }
 
-public void Event_TrackButtonClicked() {
-  if(this.hoveredButton == "Button__ExpandGrid") {
-    expandGrid();
-  }
+public void Event_TrackStartButtonClicked() {
   if(this.hoveredButton == "Button__StartSet") {
     startSet();
+  }
+}
+
+public void Event_TrackExpandGridButtonClicked() {
+  if(this.hoveredButton == "Button__ExpandGrid" && !this.fieldExandUsed) {
+    expandGrid();
   }
 }
