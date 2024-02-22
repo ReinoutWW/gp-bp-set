@@ -77,7 +77,7 @@ public void Event_TrackHoveredButton() {
     
     if (betweenNums(value[0], value[1], mouseX) && betweenNums(value[2], value[3], mouseY)) {
       hoveredButton = key;
-      break; // Stop de lus als we een gehoverde knop hebben gevonden
+      break; 
     }
   };
   
