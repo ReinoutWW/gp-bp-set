@@ -1,4 +1,66 @@
-// [GRID] Grid methods
+// [GRID] Card grid methods
+
+// [DECK] Deck management methods
+public String[][] addCardsToEmptyCardDeckSlots(String[][] cardsGrid, LinkedList<String> cards) {
+  if(cards.size() != countEmptyCardsInGrid(cardsGrid)) {
+     return new String[][]{};
+  };
+  
+  println("Adding cards to empty grid..");
+  for(int rowI = 0; rowI < cardsGrid.length; rowI++) {
+    for(int columnI = 0; columnI < cardsGrid[rowI].length; columnI++) {
+      if(strIsNullOrEmpty(cardsGrid[rowI][columnI])) {
+        cardsGrid[rowI][columnI] = cards.pop();
+      }
+    }
+  }
+  
+  return cardsGrid;
+}
+
+public LinkedList<String> generateCards(String[] colors, String[] shapes, int maxShapesPerCard) {
+  if(colors.length == 0 || shapes.length == 0 || maxShapesPerCard < 1) {
+    return new LinkedList<String>();
+  }
+    
+  LinkedList<String> cards = new LinkedList<String>();
+  
+  for(int colorI = 0; colorI < colors.length; colorI++) {
+     for(int shapeI = 0; shapeI < shapes.length; shapeI++) { 
+       for(int maxShapesI = 0; maxShapesI < maxShapesPerCard; maxShapesI++) { 
+          String colorSymbol = colors[colorI].substring(0, 1);
+          String shapeSymbol = shapes[shapeI].substring(0, 1);
+          String shapeAmount = str(maxShapesI + 1);
+          
+          String card = shapeAmount + colorSymbol + shapeSymbol;
+          cards.add(card);
+       }
+     }
+  }
+  
+  return cards;
+};
+
+void replaceSelectedCardsWithNewCards() {
+  for(int row = 0; row < this.cardPlayfieldGrid.length; row++) {
+    for(int column = 0; column < this.cardPlayfieldGrid[0].length; column++) {
+      String card = this.cardPlayfieldGrid[row][column];
+      String newCard = "";
+      
+      if(cardIsInSelection(card)) {
+        this.activeCardDeck.remove(card);
+        LinkedList<String> newCards = getRandomCardsFromActiveDeck(1);
+        
+        if(newCards.size() != 0) {
+          newCard = newCards.get(0);
+        }
+        
+        this.cardPlayfieldGrid[row][column] = newCard;
+      }
+    }
+  }
+}
+
 public void fillEmptySlotsWithCards() {
   LinkedList<String> randomCards = getRandomCardsFromActiveDeck(countEmptyCardsInGrid(this.cardPlayfieldGrid));
   println("Got random cards.." + randomCards);
@@ -35,9 +97,9 @@ public boolean deckHasCardsLeft() {
 }
 
 private void sizeWindowToGridAndControlbar(String[][] grid) {
-  int gridWidth = grid[0].length * CARDWIDTH;
-  int gridHeight = grid.length * CARDHEIGHT;
-  int windowHeight = gridHeight + CONTROLBARHEIGHT;
+  int gridWidth = grid[0].length * CARD_WIDTH;
+  int gridHeight = grid.length * CARD_HEIGHT;
+  int windowHeight = gridHeight + CONTROL_BAR_HEIGHT;
   int windowWidth = gridWidth;
   
   windowResize(windowWidth, windowHeight);
@@ -90,6 +152,6 @@ public void expandGrid() {
   
   this.cardPlayfieldGrid = newField;
   fillEmptySlotsWithCards();
-  width = this.cardPlayfieldGrid[0].length * CARDWIDTH;
+  width = this.cardPlayfieldGrid[0].length * CARD_WIDTH;
   this.fieldExandUsed = true;
 }

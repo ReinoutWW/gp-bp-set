@@ -24,42 +24,41 @@ import java.util.Map;
 // - Symbol sizing (width and height)
 
 // Playing field (Dynamic playing field)
-final int INITIALGRIDHEIGHT = 3;
-final int INITIALGRIDWIDTH = 3;
+final int INITIAL_GRID_HEIGHT = 3;
+final int INITIAL_GRID_WIDTH = 3;
 
 // Settings (Support different sets dynamically)
+final int MAX_SHAPES_PER_CARD = 3;
 final String[] COLORS = { "red", "green", "blue" };
 final String[] SHAPES = { "eclipse", "square", "triangle" };
-final int MAXSHAPESPERCARD = 3;
-
-final int[] COMPONENTPADDING = new int[] { 10, 10 }; // x, y
-final int CARDHEIGHT = 200;
-final int CARDWIDTH = 200;
-final int SYMBOLWIDTH = round(CARDWIDTH * 0.6f); // Symbol for the card
-final int SYMBOLHEIGHT = round(CARDHEIGHT * 0.15f); // Symbol for the card
-final int FONTSIZE = 16;
-final int CONTROLBARHEIGHT = 150;
-final int SETFOUNDSCORE = 100;
-final int MAXCARDSELECTION = 3;
-PFont FONTFAMILY;
+final int CARD_HEIGHT = 200;
+final int CARD_WIDTH = 200;
+final int SYMBOL_WIDTH = round(CARD_WIDTH * 0.6f); // Symbol for the card
+final int SYMBOL_HEIGHT = round(CARD_HEIGHT * 0.15f); // Symbol for the card
+final int CONTROL_BAR_HEIGHT = 150;
+final int SET_FOUND_SCORE = 100;
+final int MAX_CARD_SELECTION = 3;
 
 // States for the game
 String[][] cardPlayfieldGrid = new String[3][3];
 LinkedList<String> initialCardDeck = new LinkedList<String>();
 LinkedList<String> activeCardDeck = new LinkedList<String>();
 LinkedList<String> selectedCards = new LinkedList<String>();
-String hoveredCard = null;
-String hoveredButton = null;
-int setsOnTable = 0;
-int setsFound = 0;
-int userScore = 0;
-float userScoreMultiplier = 1f;
+
 boolean gameActive = false;
 boolean showScoreHomescreen = false;
 boolean fieldExandUsed = false;
-
+String hoveredCard = null;
+String hoveredButton = null;
+float userScoreMultiplier = 1f;
+int setsOnTable = 0;
+int setsFound = 0;
+int userScore = 0;
 
 // Styling
+PFont FONT_FAMILY;
+final int FONT_SIZE = 16;
+final int[] COMPONENT_PADDING = new int[] { 10, 10 }; // x, y
 HashMap<String, Integer> STYLES = new HashMap<String, Integer>() {{
   put("TextColor", color(20, 20, 20)); 
   put("Card__Background", color(245, 245, 245));
@@ -86,8 +85,10 @@ HashMap<String, int[]> BUTTONS = new HashMap<String, int[]>() {{ // Id, Cords, E
 }};
 
 void setup() {
-  this.FONTFAMILY = createFont("Minecraft.ttf", 128);
+  this.FONT_FAMILY = createFont("Minecraft.ttf", 128);
   size(600, 600);
+  
+  StartUnitTest();
 }
 
 void draw() {
@@ -124,7 +125,7 @@ void mousePressed() {
 public void startSet() {
   println("Starting game..");
   
-  this.cardPlayfieldGrid = new String[this.INITIALGRIDHEIGHT][this.INITIALGRIDWIDTH];
+  this.cardPlayfieldGrid = new String[this.INITIAL_GRID_HEIGHT][this.INITIAL_GRID_WIDTH];
   this.printWindowGridSize(this.cardPlayfieldGrid);
   this.userScore = 0;
   this.userScoreMultiplier = 1f;
@@ -137,7 +138,7 @@ public void startSet() {
   this.setsOnTable = 0;
   
   // Setup the playing field
-  this.initialCardDeck = generateCards(this.COLORS, this.SHAPES, this.MAXSHAPESPERCARD);
+  this.initialCardDeck = generateCards(this.COLORS, this.SHAPES, this.MAX_SHAPES_PER_CARD);
   this.activeCardDeck = new LinkedList<String>(this.initialCardDeck);
   
   // Get the first grid..
@@ -145,106 +146,4 @@ public void startSet() {
   this.setsOnTable = countValidSetsInGrid(this.cardPlayfieldGrid); 
 
   this.printSetStatistics();
-}
-
-
-// [VALIDATE] Validating sets
-private static boolean isValidSet(String card1, String card2, String card3) {
-    if(strIsNullOrEmpty(card1) || strIsNullOrEmpty(card2) || strIsNullOrEmpty(card3)) {
-      return false;
-    }
-  
-    return allSameOrDifferent(card1.charAt(0), card2.charAt(0), card3.charAt(0)) && // Number
-           allSameOrDifferent(card1.charAt(1), card2.charAt(1), card3.charAt(1)) && // Color
-           allSameOrDifferent(card1.charAt(2), card2.charAt(2), card3.charAt(2));  // Shape
-}
-
-private static boolean allSameOrDifferent(char a, char b, char c) {
-    return (a == b && b == c) || (a != b && b != c && a != c);
-}
-
-// o(n,3) time complexity
-int countValidSetsInGrid(String[][] playfield) {
-  String[] cards = gridToArray(playfield);
-  int count = 0;
-  HashSet<String> uniqueSets = new HashSet<String>();
-
-  for (int i = 0; i < cards.length; i++) {
-    for (int j = i + 1; j < cards.length; j++) {
-      for (int k = j + 1; k < cards.length; k++) {
-        if (isValidSet(cards[i], cards[j], cards[k])) {
-          String[] set = {cards[i], cards[j], cards[k]};
-          Arrays.sort(set); // Sort to ensure uniqueness regardless of order
-          String setKey = set[0] + "," + set[1] + "," + set[2]; // Create a unique key for the set
-          
-          println("Current possible set: " + setKey);
-          
-          if (!uniqueSets.contains(setKey)) {
-            uniqueSets.add(setKey);
-            count++;
-          }
-        }
-      }
-    }
-  }
-
-  return count;
-}
-
-// [DECK] Deck management methods
-public String[][] addCardsToEmptyCardDeckSlots(String[][] cardsGrid, LinkedList<String> cards) {
-  if(cards.size() != countEmptyCardsInGrid(cardsGrid)) {
-     return new String[][]{};
-  };
-  
-  println("Adding cards to empty grid..");
-  for(int rowI = 0; rowI < cardsGrid.length; rowI++) {
-    for(int columnI = 0; columnI < cardsGrid[rowI].length; columnI++) {
-      if(strIsNullOrEmpty(cardsGrid[rowI][columnI])) {
-        cardsGrid[rowI][columnI] = cards.pop();
-      }
-    }
-  }
-  
-  return cardsGrid;
-}
-
-public LinkedList<String> generateCards(String[] colors, String[] shapes, int maxShapesPerCard) {
-  print("Generating cards using predefined settings..");
-  LinkedList<String> cards = new LinkedList<String>();
-  
-  for(int colorI = 0; colorI < colors.length; colorI++) {
-     for(int shapeI = 0; shapeI < shapes.length; shapeI++) { 
-       for(int maxShapesI = 0; maxShapesI < maxShapesPerCard; maxShapesI++) { 
-          String colorSymbol = colors[colorI].substring(0, 1);
-          String shapeSymbol = shapes[shapeI].substring(0, 1);
-          String shapeAmount = str(maxShapesI + 1);
-          
-          String card = shapeAmount + colorSymbol + shapeSymbol;
-          cards.add(card);
-       }
-     }
-  }
-  
-  return cards;
-};
-
-void replaceSelectedCardsWithNewCards() {
-  for(int row = 0; row < this.cardPlayfieldGrid.length; row++) {
-    for(int column = 0; column < this.cardPlayfieldGrid[0].length; column++) {
-      String card = this.cardPlayfieldGrid[row][column];
-      String newCard = "";
-      
-      if(cardIsInSelection(card)) {
-        this.activeCardDeck.remove(card);
-        LinkedList<String> newCards = getRandomCardsFromActiveDeck(1);
-        
-        if(newCards.size() != 0) {
-          newCard = newCards.get(0);
-        }
-        
-        this.cardPlayfieldGrid[row][column] = newCard;
-      }
-    }
-  }
 }

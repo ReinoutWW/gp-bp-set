@@ -1,12 +1,5 @@
 // [EVENTS] Track events. Prefix : "Event_{Method name}"
 
-public void addAndDrawButton(int x, int y, int buttonWidth, int buttonHeight, String buttonId, String buttonText) {  
-  int[] buttonData = new int[] { x, y, buttonWidth, buttonHeight}; // fromX, toX, width, height
-  AddEventBind(buttonId, buttonData); // This will calculate the buttons dimensions for click event validation
-  
-  drawButton(buttonText, x, y, buttonWidth, buttonHeight, buttonId);
-}
-
 // Cords = x, y, width, height (0, 1, 2, 3)
 public void AddEventBind(String buttonId, int[] buttonData) {
   int fromX = buttonData[0];
@@ -40,10 +33,10 @@ public void Event_TrackHoveredCard() {
   for(int row = 0; row < this.cardPlayfieldGrid.length; row++) {
     for(int column = 0; column < this.cardPlayfieldGrid[0].length; column++) {
       // See if the mouse is hovered on top of a card in the grid..
-      int fromX = column * this.CARDWIDTH;
-      int toX = (column + 1) * this.CARDWIDTH;
-      int fromY = row * this.CARDHEIGHT;
-      int toY = (row + 1) * this.CARDHEIGHT;
+      int fromX = column * this.CARD_WIDTH;
+      int toX = (column + 1) * this.CARD_WIDTH;
+      int fromY = row * this.CARD_HEIGHT;
+      int toY = (row + 1) * this.CARD_HEIGHT;
            
       if(betweenNums(fromX, toX, mouseX) && betweenNums(fromY, toY, mouseY)) {
         hoveredCard = this.cardPlayfieldGrid[row][column];

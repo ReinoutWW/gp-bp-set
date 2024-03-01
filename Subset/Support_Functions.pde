@@ -3,9 +3,9 @@
 
 public int[] calculateSymbolPosition(int row, int column, int index, int totalSymbols, int symbolWidth, int symbolHeight) {
     // Ensure even spacing by calculating the vertical spacing correctly
-    int spacing = (CARDHEIGHT - (symbolHeight * totalSymbols)) / (totalSymbols + 1);  
-    int x = column * CARDWIDTH + ((CARDWIDTH - symbolWidth) / 2); // Center horizontally within the card
-    int y = row * CARDHEIGHT + spacing + (index * (symbolHeight + spacing)); // Adjust vertical spacing
+    int spacing = (CARD_HEIGHT - (symbolHeight * totalSymbols)) / (totalSymbols + 1);  
+    int x = column * CARD_WIDTH + ((CARD_WIDTH - symbolWidth) / 2); // Center horizontally within the card
+    int y = row * CARD_HEIGHT + spacing + (index * (symbolHeight + spacing)); // Adjust vertical spacing
     return new int[]{x, y};
 }
 
@@ -14,7 +14,7 @@ public void reduceScoreMultiplier() {
 }
 
 public void addScore() {
-  this.userScore = this.userScore + round(SETFOUNDSCORE * this.userScoreMultiplier);
+  this.userScore = this.userScore + round(SET_FOUND_SCORE * this.userScoreMultiplier);
 }
 
 void clearSelection() {
@@ -22,7 +22,7 @@ void clearSelection() {
 }
 
 public boolean userHasSetSelection() {
-  return (this.selectedCards.size() == MAXCARDSELECTION);
+  return (this.selectedCards.size() == MAX_CARD_SELECTION);
 }
 
 public boolean cardIsInSelection(String card) {
@@ -64,8 +64,8 @@ public void printGrid(String[][] playfield) {
 }
 
 private void printWindowGridSize(String[][] grid) {
-  int gridWidth = grid[0].length * CARDWIDTH;
-  int gridHeight = grid.length * CARDHEIGHT;
+  int gridWidth = grid[0].length * CARD_WIDTH;
+  int gridHeight = grid.length * CARD_HEIGHT;
   println("Gridsize: " + gridWidth + " x " + gridHeight);
 }
 
