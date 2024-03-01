@@ -2,6 +2,30 @@
 // Shapes will draw without a standard color.
 // Text will default to the selected color in the STYLES HashMap.
 
+// Styling
+PFont FONT_FAMILY;
+final int FONT_SIZE = 16;
+final int[] COMPONENT_PADDING = new int[] { 10, 10 }; // x, y
+HashMap<String, Integer> STYLES = new HashMap<String, Integer>() {{
+  put("TextColor", color(20, 20, 20)); 
+  put("Card__Background", color(245, 245, 245));
+  put("Card__Active", color(249, 239, 219));
+  put("Card__Hover", color(245, 242, 235));
+  put("Symbol__Red", color(204, 110, 110));
+  put("Symbol__Blue", color(110, 144, 204));
+  put("Symbol__Green", color(110, 204, 135)); 
+  put("ControlBar__Background", color(245, 238, 225)); 
+  put("ControlBar__Text", color(20, 20, 20)); 
+  put("btn__Text", color(20, 20, 20)); 
+  put("btn__FontSize", 12); 
+  put("btn__Background", color(235, 208, 176)); 
+  put("btn__Hover", color(225, 219, 211)); 
+  put("BorderRadius__Element", 10); 
+  put("EndScreen__Background", color(245, 238, 225)); 
+  put("EndScreen__Text", color(20, 20, 20)); 
+  put("Score__Background", color(245, 245, 245)); 
+}};
+
 public void addAndDrawButton(int x, int y, int buttonWidth, int buttonHeight, String buttonId, String buttonText) {  
   int[] buttonData = new int[] { x, y, buttonWidth, buttonHeight}; // fromX, toX, width, height
   AddEventBind(buttonId, buttonData); // This will calculate the buttons dimensions for click event validation

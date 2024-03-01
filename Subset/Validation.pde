@@ -3,6 +3,10 @@ private static boolean isValidSet(String card1, String card2, String card3) {
     if(strIsNullOrEmpty(card1) || strIsNullOrEmpty(card2) || strIsNullOrEmpty(card3)) {
       return false;
     }
+    
+    if( card1.length() != 3 || card2.length() != 3 || card3.length() != 3) {
+      return false;
+    }
   
     return allSameOrDifferent(card1.charAt(0), card2.charAt(0), card3.charAt(0)) && // Number
            allSameOrDifferent(card1.charAt(1), card2.charAt(1), card3.charAt(1)) && // Color

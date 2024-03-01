@@ -29,7 +29,7 @@ public boolean cardIsInSelection(String card) {
   return this.selectedCards.contains(card);
 }
 
-public boolean isValidSetSelection() {
+public boolean isValidSetSelection() { 
     return isValidSet(this.selectedCards.get(0), this.selectedCards.get(1), this.selectedCards.get(2));
 }
 

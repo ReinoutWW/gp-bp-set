@@ -1,5 +1,10 @@
 // [EVENTS] Track events. Prefix : "Event_{Method name}"
 
+// For event binding
+HashMap<String, int[]> BUTTONS = new HashMap<String, int[]>() {{ // Id, Cords, Event click
+  put("Button__ExpandGrid", new int[] {0, 0, 0, 0}); // ButtonId + [fromX, toX, fromY, toY]
+}};
+
 // Cords = x, y, width, height (0, 1, 2, 3)
 public void AddEventBind(String buttonId, int[] buttonData) {
   int fromX = buttonData[0];

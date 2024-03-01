@@ -1,5 +1,17 @@
 // [GRID] Card grid methods
 
+// States for the game
+String[][] cardPlayfieldGrid = new String[3][3];
+LinkedList<String> initialCardDeck = new LinkedList<String>();
+LinkedList<String> activeCardDeck = new LinkedList<String>();
+LinkedList<String> selectedCards = new LinkedList<String>();
+
+final int CARD_HEIGHT = 200;
+final int CARD_WIDTH = 200;
+final int SYMBOL_WIDTH = round(CARD_WIDTH * 0.6f); // Symbol for the card
+final int SYMBOL_HEIGHT = round(CARD_HEIGHT * 0.15f); // Symbol for the card
+final int CONTROL_BAR_HEIGHT = 150;
+
 // [DECK] Deck management methods
 public String[][] addCardsToEmptyCardDeckSlots(String[][] cardsGrid, LinkedList<String> cards) {
   if(cards.size() != countEmptyCardsInGrid(cardsGrid)) {
