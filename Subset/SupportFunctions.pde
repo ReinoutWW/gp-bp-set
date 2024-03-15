@@ -14,6 +14,7 @@ public void reduceScoreMultiplier() {
 }
 
 public void addScore() {
+  
   this.userScore = this.userScore + round(SET_FOUND_SCORE * this.userScoreMultiplier);
 }
 

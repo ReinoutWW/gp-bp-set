@@ -1,5 +1,5 @@
 // [VALIDATE] Validating sets
-private static boolean isValidSet(String card1, String card2, String card3) {
+public boolean isValidSet(String card1, String card2, String card3) {
     if(strIsNullOrEmpty(card1) || strIsNullOrEmpty(card2) || strIsNullOrEmpty(card3)) {
       return false;
     }
@@ -13,12 +13,12 @@ private static boolean isValidSet(String card1, String card2, String card3) {
            allSameOrDifferent(card1.charAt(2), card2.charAt(2), card3.charAt(2));  // Shape
 }
 
-private static boolean allSameOrDifferent(char a, char b, char c) {
+public boolean allSameOrDifferent(char a, char b, char c) {
     return (a == b && b == c) || (a != b && b != c && a != c);
 }
 
 // o(n,3) time complexity
-int countValidSetsInGrid(String[][] playfield) {
+public int countValidSetsInGrid(String[][] playfield) {
   String[] cards = gridToArray(playfield);
   int count = 0;
   HashSet<String> uniqueSets = new HashSet<String>();
